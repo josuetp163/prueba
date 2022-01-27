@@ -1,5 +1,6 @@
 const Tokens = require('../models').Tokens
 const TokenUse = require('../models').TokenUse
+const User = require('../models').User
 const crypto = require("crypto");
 const { Op } = require("sequelize");
 
@@ -7,58 +8,93 @@ const { Op } = require("sequelize");
                     TOKER ENDPOINTS
 ---------------------------------------------------*/
 
+/**
+ * Get all generated tokens 
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
 exports.getTokens = async function (req, res, next) {
     Tokens.findAll()
         .then((tokens) => res.send(tokens))
         .catch((err) => res.send(err))
 }
 
-
+/**
+ * Create a new token by get endpoint - Client (Username) in query required
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
 exports.createToken = async function (req, res, next) {
-    token = crypto.randomInt(100000, 1000000);
-    var time = new Date();
-    time.setSeconds(time.getSeconds() + 60);
-    Tokens.create({
-        UserId: req.body.id,
-        token: token,
-        expiresAt: time
-    })
-        .then(() => res.send({ token: token, expiresAt: time }))
-        .catch((err) => res.send(err))
+    if (!req.query.cliente) {
+        res.status(401).send({ msg: "ERROR!" })
+    } else {
+        const user = await User.findOne({ where: { username: req.query.cliente, } })
+        token = crypto.randomInt(100000, 1000000);
+        var time = new Date();
+        time.setSeconds(time.getSeconds() + 60);
+        Tokens.create({
+            UserId: user.id,
+            token: token,
+            expiresAt: time
+        })
+            .then(() => res.send({ token: token, expiresAt: time }))
+            .catch((err) => res.send(err))
+    }
 }
 
-exports.createTokenSocket = function (id) {
+/**
+ * Create a new token by the socket connected to the frontend - Username required.
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+exports.createTokenSocket = async function (username) {
+    const user = await User.findOne({ where: { username: username, } })
     token = crypto.randomInt(100000, 1000000);
     var time = new Date();
     time.setSeconds(time.getSeconds() + 20);
     Tokens.create({
-        UserId: id,
+        UserId: user.id,
         token: token,
         expiresAt: time
     })
     return { token: token, expiresAt: time }
 }
 
+/**
+ * Make use of a token. Client (Username) and token in query required.
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
 exports.useToken = async function (req, res, next) {
-    var time = new Date();
-    const token = await Tokens.findOne({
-        where: {
-            UserId: req.body.idUser,
-            token: req.body.token,
-            expiresAt: {
-                [Op.gte]: time
-            }
-        }
-    })
-
-    if (token === null) {
-        res.send({ msg: 'Not found!' });
+    if (!req.query.cliente || !req.query.token) {
+        res.status(401).send({ msg: "ERROR!" })
     } else {
-        TokenUse.create({
-            TokenId: token.id,
-            UserId: token.UserId,
-            createdAt: time
+        var time = new Date();
+        const user = await User.findOne({ where: { username: req.query.cliente, } })
+        const token = await Tokens.findOne({
+            where: {
+                UserId: user.id,
+                token: req.query.token,
+                expiresAt: {
+                    [Op.gte]: time
+                }
+            }
         })
-        res.send(token);
+
+        if (token === null) {
+            res.send({ msg: 'Token incorrecto.' });
+        } else {
+            TokenUse.create({
+                TokenId: token.id,
+                UserId: token.UserId,
+                createdAt: time
+            })
+            res.send({ response: "Token usado correctamente!!" });
+        }
     }
+
 }

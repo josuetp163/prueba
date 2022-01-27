@@ -3,7 +3,6 @@
 /**
  * Module dependencies.
  */
-
 var app = require('../app');
 var debug = require('debug')('backend:server');
 var http = require('http');
@@ -25,7 +24,6 @@ var server = http.createServer(app);
 /**
  * Listen on provided port, on all network interfaces.
  */
-
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
@@ -37,18 +35,27 @@ const socket = require('socket.io')(server, {
   }
 });
 
-
+/**
+ * Socket connection
+ */
 socket.on('connection', socket => {
   console.log("new connection");
   socket.emit('generate-token', { id: socket.id })
 
+  /**
+   * Socket to generate token
+   */
   socket.on('generate-token', (message) => {
     console.log(message);
-    token = tokens.createTokenSocket(message.id);
-    console.log(token);
-    socket.emit('get-token', token);
+    tokens.createTokenSocket(message.username).then((token) => {
+      console.log(token);
+      socket.emit('get-token', token);
+    });
   })
 
+  /**
+   * Socken disconnect
+   */
   socket.on('disconnect', socket => {
     console.log("Disconnected")
   })

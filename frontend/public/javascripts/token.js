@@ -1,7 +1,7 @@
 
 const socket = io('http://localhost:3000')
 
-const intervalTime = 20
+const intervalTime = 60
 
 var timeLeft = intervalTime;
 
@@ -10,28 +10,27 @@ socket.on('connect', () => {
 })
 
 socket.on('get-token', message => {
-    console.log(message);
     document.getElementById("token").innerHTML = String(message.token);
 });
 
 function countdown() {
+    var timer = document.getElementById("countdown-number");
     timeLeft--;
-    document.getElementById("seconds").innerHTML = String(timeLeft);
+    timer.textContent = String(timeLeft);
     if (timeLeft > 0) {
         setTimeout(countdown, 1000);
     } else {
         timeLeft = intervalTime;
         setTimeout(countdown, 1000);
-        getToken()
+        getToken(user)
     }
 };
 
-function getToken() {
-    console.log("TOKEN!!!")
-    socket.emit('generate-token', { id: 1 });
+function getToken(user) {
+    socket.emit('generate-token', { username: user });
 }
 
-getToken()
+getToken(user)
 setTimeout(countdown, 1000);
 
 

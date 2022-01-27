@@ -6,9 +6,9 @@ const tokenUse = require('../controllers/tokenUse.controller')
 /* GET users listing. */
 router.get('/', tokens.getTokens);
 
-router.post('/', tokens.createToken);
+router.get('/generarToken', tokens.createToken);
 
-router.post('/use',tokens.useToken);
+router.get('/usarToken',tokens.useToken);
 
 router.get('/use', tokenUse.getTokenUse);
 
