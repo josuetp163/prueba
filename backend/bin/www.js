@@ -3,6 +3,7 @@
 /**
  * Module dependencies.
  */
+
 var app = require('../app');
 var debug = require('debug')('backend:server');
 var http = require('http');
@@ -28,38 +29,48 @@ server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
+/**
+ * Socket Version
+ */
+
+/*
 const socket = require('socket.io')(server, {
   cors: {
     origin: "*",
     methods: ['GET', 'POST']
   }
-});
+});*/
 
 /**
  * Socket connection
  */
+/*
 socket.on('connection', socket => {
   console.log("new connection");
   socket.emit('generate-token', { id: socket.id })
+  */
 
   /**
    * Socket to generate token
    */
+  /*
   socket.on('generate-token', (message) => {
     console.log(message);
     tokens.createTokenSocket(message.username).then((token) => {
       console.log(token);
       socket.emit('get-token', token);
     });
-  })
+  })*/
 
   /**
    * Socken disconnect
    */
+
+  /*
   socket.on('disconnect', socket => {
     console.log("Disconnected")
   })
-})
+})*/
 
 /**
  * Normalize a port into a number, string, or false.

@@ -33,7 +33,7 @@ exports.createToken = async function (req, res, next) {
         const user = await User.findOne({ where: { username: req.query.cliente, } })
         token = crypto.randomInt(100000, 1000000);
         var time = new Date();
-        time.setSeconds(time.getSeconds() + 60);
+        time.setMinutes(time.getMinutes() + 1);
         Tokens.create({
             UserId: user.id,
             token: token,
@@ -54,7 +54,7 @@ exports.createTokenSocket = async function (username) {
     const user = await User.findOne({ where: { username: username, } })
     token = crypto.randomInt(100000, 1000000);
     var time = new Date();
-    time.setSeconds(time.getSeconds() + 20);
+    time.setMinutes(time.getMinutes() + 1);
     Tokens.create({
         UserId: user.id,
         token: token,
